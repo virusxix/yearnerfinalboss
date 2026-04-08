@@ -4,7 +4,7 @@ import { getValidAccessToken } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable */
 
 export async function GET(req: NextRequest) {
   const token = await getValidAccessToken();

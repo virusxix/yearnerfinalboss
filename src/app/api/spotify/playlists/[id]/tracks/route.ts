@@ -3,7 +3,7 @@ import { getValidAccessToken } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable */
 
 type TrackDTO = {
   id: string;
