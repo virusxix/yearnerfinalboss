@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --eh-mesh-1: #1a1025;
+  --eh-mesh-2: #0d1a2b;
+  --eh-mesh-3: #251828;
+  --eh-glow: rgba(200, 180, 255, 0.35);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-[#08060c] text-white antialiased;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* Film grain — z-index lowered below UI to avoid forcing
+   mix-blend recomp over every backdrop-blur layer */
+.eh-grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  animation: grain 18s steps(4) infinite;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  contain: strict;
+}
+
+.eh-grain-static {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  16% { transform: translate3d(-5%, -10%, 0); }
+  33% { transform: translate3d(7%, -15%, 0); }
+  50% { transform: translate3d(-15%, 10%, 0); }
+  66% { transform: translate3d(15%, 0%, 0); }
+  83% { transform: translate3d(-10%, 10%, 0); }
+}
+
+/* Album art breathing pulse — gentler transform for GPU */
+.album-pulse {
+  animation: album-breathe 5s ease-in-out infinite;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+@keyframes album-breathe {
+  0%, 100% { transform: scale3d(1, 1, 1); }
+  50% { transform: scale3d(1.03, 1.03, 1); }
+}
+
+/* Album art gentle float */
+.album-float {
+  animation: album-drift 6s ease-in-out infinite;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+@keyframes album-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -6px, 0); }
+}
+
+/* Lyric glow */
+.lyric-glow {
+  text-shadow:
+    0 0 24px var(--eh-glow),
+    0 0 60px rgba(180, 160, 255, 0.15);
+}
+
+/* Glass panels */
+.glass-panel {
+  @apply rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(120,100,200,0.12)] backdrop-blur-lg;
+  @apply px-5 py-4;
+}
+
+.control-bar {
+  @apply rounded-full border border-white/10 bg-black/30 px-6 py-3 backdrop-blur-md;
+}
+
+/* Whisper modal backdrop glow */
+.whisper-modal {
+  animation: whisper-appear 0.6s ease-out forwards;
+}
+
+@keyframes whisper-appear {
+  from {
+    box-shadow: 0 0 0 rgba(160, 140, 220, 0);
+  }
+  to {
+    box-shadow: 0 0 120px rgba(160, 140, 220, 0.15),
+                0 0 240px rgba(120, 100, 200, 0.05);
+  }
+}
+
+/* Whisper save pulse */
+.whisper-save-glow {
+  box-shadow: 0 0 40px rgba(160, 140, 220, 0.3),
+              0 0 80px rgba(160, 140, 220, 0.1);
+}
+
+/* Cursor glow on whisper inputs */
+.whisper-input:focus {
+  box-shadow: 0 0 30px rgba(160, 140, 220, 0.08);
+  caret-color: rgba(200, 180, 255, 0.7);
+}
+
+/* Echo Recall — ghost cards that sharpen on hover */
+.echo-recall-card {
+  filter: blur(0.4px);
+  transition: filter 0.6s ease, opacity 0.6s ease;
+}
+
+.echo-recall-card:hover {
+  filter: blur(0px);
+}
+
+.echo-recall-card:hover p {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.echo-recall-card:hover p:first-child {
+  color: rgba(196, 181, 253, 0.6) !important;
+}
+
+/* Recall detail modal */
+.recall-detail {
+  animation: recall-glow 0.8s ease-out forwards;
+}
+
+@keyframes recall-glow {
+  from {
+    box-shadow: 0 0 0 rgba(160, 140, 220, 0);
+  }
+  to {
+    box-shadow: 0 0 100px rgba(160, 140, 220, 0.12),
+                0 0 200px rgba(120, 100, 200, 0.04);
+  }
+}
+
+/* Custom scrollbar for panels */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
