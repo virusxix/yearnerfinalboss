@@ -8,11 +8,14 @@ import { useEchoStore } from "@/store/useEchoStore";
 type Props = {
   image: string;
   colors: string[];
+  /** Stronger blurred art wash when lyrics are visible */
+  lyricsAmbient?: boolean;
 };
 
 export const LivingAlbumArt = memo(function LivingAlbumArt({
   image,
   colors,
+  lyricsAmbient = false,
 }: Props) {
   const albumFocus = useEchoStore((s) => s.albumFocus);
   const setAlbumFocus = useEchoStore((s) => s.setAlbumFocus);
@@ -58,18 +61,26 @@ export const LivingAlbumArt = memo(function LivingAlbumArt({
     <>
       {/* Background layer: large blurred art — reduced blur for perf */}
       <div className="pointer-events-none fixed inset-0 -z-[5] flex items-center justify-center">
-        <div className="album-pulse relative h-[min(120vw,140vh)] w-[min(120vw,140vh)]">
+        <div
+          className={`relative h-[min(120vw,140vh)] w-[min(120vw,140vh)] ${lyricsAmbient ? "" : "album-pulse"}`}
+        >
           <Image
             src={image}
             alt=""
             fill
-            className="object-cover opacity-25 blur-2xl"
+            className={
+              lyricsAmbient
+                ? "object-cover opacity-[0.34] blur-3xl"
+                : "object-cover opacity-25 blur-2xl"
+            }
             sizes="50vw"
             priority
           />
         </div>
       </div>
-      <div className="pointer-events-none fixed inset-0 -z-[4] bg-gradient-to-b from-transparent via-[#08060c]/70 to-[#08060c]" />
+      <div
+        className={`pointer-events-none fixed inset-0 -z-[4] bg-gradient-to-b from-transparent to-[#08060c] ${lyricsAmbient ? "via-[#08060c]/78" : "via-[#08060c]/70"}`}
+      />
 
       {/* Inline album art */}
       <div ref={containerRef} className="mb-8 flex justify-center">

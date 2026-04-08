@@ -3,14 +3,37 @@
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
+export type LyricCaptureContext = {
+  line: string;
+  prevLine: string | null;
+  nextLine: string | null;
+};
+
 export type PendingCapture = {
   lyricLine: string;
+  /** Optional lines above / below the tapped line (notes modal can include or omit) */
+  adjacentPrevLine?: string | null;
+  adjacentNextLine?: string | null;
   songTitle: string;
   artist: string;
   trackUri: string;
   positionMs: number;
   weather?: string;
 };
+
+function buildSavedLyric(
+  pending: PendingCapture,
+  includePrev: boolean,
+  includeNext: boolean
+): string {
+  const parts: string[] = [];
+  const prev = pending.adjacentPrevLine?.trim();
+  const next = pending.adjacentNextLine?.trim();
+  if (includePrev && prev) parts.push(prev);
+  parts.push(pending.lyricLine.trim());
+  if (includeNext && next) parts.push(next);
+  return parts.join("\n");
+}
 
 type Props = {
   pending: PendingCapture | null;
@@ -27,13 +50,23 @@ export const CaptureModal = memo(function CaptureModal({
 }: Props) {
   const [forWhom, setForWhom] = useState("");
   const [feeling, setFeeling] = useState("");
+  const [includePrev, setIncludePrev] = useState(false);
+  const [includeNext, setIncludeNext] = useState(false);
   const [saved, setSaved] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const hasPrev = Boolean(pending?.adjacentPrevLine?.trim());
+  const hasNext = Boolean(pending?.adjacentNextLine?.trim());
+  const previewLyric = pending
+    ? buildSavedLyric(pending, includePrev, includeNext)
+    : "";
 
   useEffect(() => {
     if (pending) {
       setForWhom("");
       setFeeling("");
+      setIncludePrev(false);
+      setIncludeNext(false);
       setSaved(false);
       setTimeout(() => inputRef.current?.focus(), 120);
     }
@@ -41,14 +74,24 @@ export const CaptureModal = memo(function CaptureModal({
 
   const save = useCallback(() => {
     if (!pending) return;
+    const lyricLine = buildSavedLyric(pending, includePrev, includeNext);
     onSave({
       ...pending,
+      lyricLine,
       forWhom: forWhom.trim() || undefined,
       feeling: feeling.trim() || undefined,
     });
     setSaved(true);
     setTimeout(() => onClose(), 1400);
-  }, [pending, forWhom, feeling, onSave, onClose]);
+  }, [
+    pending,
+    includePrev,
+    includeNext,
+    forWhom,
+    feeling,
+    onSave,
+    onClose,
+  ]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -116,9 +159,67 @@ export const CaptureModal = memo(function CaptureModal({
                       Capture this moment
                     </p>
 
-                    <p className="mt-4 rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3 font-serif text-base leading-relaxed text-white/70">
-                      &ldquo;{pending.lyricLine}&rdquo;
+                    <p className="mt-4 whitespace-pre-line rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3 font-serif text-base leading-relaxed text-white/70">
+                      &ldquo;{previewLyric}&rdquo;
                     </p>
+
+                    {(hasPrev || hasNext) && (
+                      <div className="mt-4 space-y-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+                        <p className="font-sans text-[10px] uppercase tracking-widest text-white/35">
+                          Surrounding lines
+                        </p>
+                        <label
+                          className={`flex cursor-pointer items-start gap-3 ${
+                            hasPrev ? "" : "pointer-events-none opacity-35"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={includePrev && hasPrev}
+                            disabled={!hasPrev}
+                            onChange={(e) => setIncludePrev(e.target.checked)}
+                            className="mt-1 h-3.5 w-3.5 shrink-0 rounded border-white/20 bg-white/5 text-violet-400 focus:ring-violet-400/40"
+                          />
+                          <span className="text-left font-sans text-xs leading-snug text-white/55">
+                            Include the line above
+                            {hasPrev ? (
+                              <span className="mt-1 block font-serif text-[13px] italic text-white/40">
+                                {pending.adjacentPrevLine}
+                              </span>
+                            ) : (
+                              <span className="mt-0.5 block text-white/30">
+                                (none)
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                        <label
+                          className={`flex cursor-pointer items-start gap-3 ${
+                            hasNext ? "" : "pointer-events-none opacity-35"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={includeNext && hasNext}
+                            disabled={!hasNext}
+                            onChange={(e) => setIncludeNext(e.target.checked)}
+                            className="mt-1 h-3.5 w-3.5 shrink-0 rounded border-white/20 bg-white/5 text-violet-400 focus:ring-violet-400/40"
+                          />
+                          <span className="text-left font-sans text-xs leading-snug text-white/55">
+                            Include the line below
+                            {hasNext ? (
+                              <span className="mt-1 block font-serif text-[13px] italic text-white/40">
+                                {pending.adjacentNextLine}
+                              </span>
+                            ) : (
+                              <span className="mt-0.5 block text-white/30">
+                                (none)
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      </div>
+                    )}
 
                     <div className="mt-6 space-y-4">
                       <div>

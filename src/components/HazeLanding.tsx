@@ -8,6 +8,9 @@ import { Suspense } from "react";
 const RAIN_VIDEO =
   "https://assets.mixkit.co/videos/preview/mixkit-rain-falling-on-the-window-on-a-gray-afternoon-44297-large.mp4";
 
+const LANDING_LYRIC =
+  "All these distractions yet I find myself still yearning for you at the end of the day.";
+
 function LandingInner() {
   const params = useSearchParams();
   const err = params.get("error");
@@ -29,21 +32,22 @@ function LandingInner() {
 
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0610]/80 via-[#120a18]/70 to-[#08060c]/95" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex max-w-lg flex-col items-center px-8 text-center"
-      >
+      <div className="relative z-10 flex w-full max-w-[min(100%,72rem)] flex-col items-center justify-center px-6 text-center">
+        <h1 className="sr-only">Echo &amp; Haze</h1>
         <p className="font-sans text-xs uppercase tracking-[0.35em] text-white/45">
           Echo &amp; Haze
         </p>
-        <h1 className="mt-6 font-serif text-4xl font-medium leading-tight text-white/95 md:text-5xl">
-          Listen like the room
-          <br />
-          is only glass and rain.
-        </h1>
-        <p className="mt-6 font-sans text-sm leading-relaxed text-white/55">
+        <div className="lyric-text-fade mt-8 md:mt-10">
+          <motion.p
+            className="lyric-text"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.42, 0, 0.58, 1] }}
+          >
+            {LANDING_LYRIC}
+          </motion.p>
+        </div>
+        <p className="mt-8 font-sans text-sm leading-relaxed text-white/55 md:mt-10">
           An immersive player for mood, memory, and the line that hits you when
           the world goes quiet.
         </p>
@@ -75,7 +79,7 @@ function LandingInner() {
             <span className="relative">Enter the Haze</span>
           </Link>
         </motion.div>
-      </motion.div>
+      </div>
     </main>
   );
 }

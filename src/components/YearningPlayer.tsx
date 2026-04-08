@@ -15,7 +15,11 @@ import { useEchoStore, type JournalEntry } from "@/store/useEchoStore";
 import { FilmGrain } from "./FilmGrain";
 import { LivingAlbumArt } from "./LivingAlbumArt";
 import { DualLyric } from "./DualLyric";
-import { CaptureModal, type PendingCapture } from "./CaptureModal";
+import {
+  CaptureModal,
+  type LyricCaptureContext,
+  type PendingCapture,
+} from "./CaptureModal";
 import { NoteRecall } from "./NoteRecall";
 
 const MeshGradient = dynamic(
@@ -340,8 +344,14 @@ export function YearningPlayer() {
     };
   }, [active?.track?.image]);
 
+  const prevLine =
+    lineIdx > 0 && lines[lineIdx - 1] ? lines[lineIdx - 1]!.text : null;
   const currentLine =
     lineIdx >= 0 && lines[lineIdx] ? lines[lineIdx]!.text : null;
+  const nextLine =
+    lineIdx >= 0 && lines[lineIdx + 1] ? lines[lineIdx + 1]!.text : null;
+  const afterNextLine =
+    lineIdx >= 0 && lines[lineIdx + 2] ? lines[lineIdx + 2]!.text : null;
 
   const onSeek = useCallback(
     (ms: number) => {
@@ -362,8 +372,9 @@ export function YearningPlayer() {
 
   const [pendingCapture, setPendingCapture] = useState<PendingCapture | null>(null);
 
-  const captureLine = useCallback(async () => {
-    if (!active?.track || !currentLine) return;
+  const captureLine = useCallback(async (ctx: LyricCaptureContext) => {
+    const line = ctx.line?.trim();
+    if (!active?.track || !line) return;
     let weather: string | undefined;
     try {
       weather = await fetchWeatherSummary();
@@ -371,14 +382,16 @@ export function YearningPlayer() {
       weather = undefined;
     }
     setPendingCapture({
-      lyricLine: currentLine,
+      lyricLine: line,
+      adjacentPrevLine: ctx.prevLine?.trim() || undefined,
+      adjacentNextLine: ctx.nextLine?.trim() || undefined,
       songTitle: active.track.name,
       artist: active.track.artists,
       trackUri: active.track.uri,
       positionMs: Math.floor(displayPosRef.current),
       weather,
     });
-  }, [active?.track, currentLine]);
+  }, [active?.track]);
 
   const handleCaptureSave = useCallback(
     (data: PendingCapture & { forWhom?: string; feeling?: string }) => {
@@ -509,7 +522,21 @@ export function YearningPlayer() {
         ) : (
           <>
             {trackImage ? (
-              <LivingAlbumArt image={trackImage} colors={colors} />
+              <LivingAlbumArt
+                image={trackImage}
+                colors={colors}
+                lyricsAmbient={lyricsOn}
+              />
+            ) : null}
+
+            {trackImage && lyricsOn ? (
+              <div
+                className="pointer-events-none fixed inset-0 -z-[6]"
+                style={{
+                  background: `radial-gradient(ellipse 95% 72% at 50% 36%, ${colors[0] ?? "#1a1025"}26, transparent 58%)`,
+                }}
+                aria-hidden
+              />
             ) : null}
 
             <AnimatePresence mode="wait">
@@ -537,8 +564,13 @@ export function YearningPlayer() {
             {lyricsOn && (
               <DualLyric
                 lineIdx={lineIdx}
+                prevText={prevLine}
                 text={currentLine}
-                onCapture={() => void captureLine()}
+                nextText={nextLine}
+                afterNextText={afterNextLine}
+                trackId={active.track.id}
+                reducedMotion={performanceMode}
+                onCapture={(ctx) => void captureLine(ctx)}
               />
             )}
           </>

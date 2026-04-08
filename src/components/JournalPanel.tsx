@@ -103,7 +103,7 @@ export const JournalPanel = memo(function JournalPanel({ deviceId, onReplay }: P
                               onClick={() => onReplay(e)}
                               className="glass-panel w-full text-left transition-all duration-500 hover:border-white/25 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                              <p className="font-serif text-lg leading-snug text-white/90">
+                              <p className="whitespace-pre-line font-serif text-lg leading-snug text-white/90">
                                 &ldquo;{e.lyricLine}&rdquo;
                               </p>
                               {e.forWhom ? (
